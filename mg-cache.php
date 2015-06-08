@@ -47,9 +47,6 @@ if (!class_exists('MgCache')) {
             require('MgCacheRequirements.php');
             if (MgCacheRequirements::checkRequirements()) {
 
-                // activate/deactivate hooks
-                register_activation_hook(__FILE__, array('MgCache', 'activate'));
-                register_deactivation_hook(__FILE__, array('MgCache', 'deactivate'));
                 add_action('mgCacheAdd', array('MgCacheHelper', 'add'), 10, 3);
                 add_action('mgCacheSet', array('MgCacheHelper', 'set'), 10, 3);
                 add_filter('mgCacheGet', array('MgCacheHelper', 'get'), 10, 2);
@@ -68,32 +65,7 @@ if (!class_exists('MgCache')) {
                 add_filter('category_rewrite_rules', array('MgCacheRouting', 'rewriteRulesFilter'));
             }
         }
-
-        /**
-         * Activate
-         *
-         * @return null
-         */
-        public static function activate()
-        {
-
-            // add rewrite rules
-            include_once('MgCacheRouting.php');
-
-            // flush rewrite rules
-            flush_rewrite_rules();
-        }
-
-        /**
-         * Deactivate
-         *
-         * @return null
-         */
-        public static function deactivate()
-        {
-            MgCache::$active = false;
-            flush_rewrite_rules();
-        }
+        
 
         /**
          * Load
