@@ -79,7 +79,6 @@ if (!class_exists('MgCache')) {
 
             // add rewrite rules
             include_once('MgCacheRouting.php');
-//            MgCacheRouting::addRewriteRules(); // @deprecated since version 1.1
 
             // flush rewrite rules
             flush_rewrite_rules();

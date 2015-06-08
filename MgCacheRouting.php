@@ -31,22 +31,6 @@ class MgCacheRouting
     }
 
     /**
-     * Add Rewrite Rules
-     *
-     * @deprecated since version 1.1, use MgCacheRouting::rewriteRulesFilter() instead
-     * @return null
-     */
-    public static function addRewriteRules()
-    {
-
-        // MgAssetController::assetStylesheetAction()
-        add_rewrite_rule('wp/wp-content/plugins/mg-cache/cache/(\w+)\.css$', 'index.php?pagename=mg_asset_css&fingerprint=$matches[1]', 'top');
-
-        // MgAssetController::assetScriptAction()
-        add_rewrite_rule('wp/wp-content/plugins/mg-cache/cache/(\w+)\.js$', 'index.php?pagename=mg_asset_js&fingerprint=$matches[1]', 'top');
-    }
-
-    /**
      * Rewrite Rules Filter
      *
      * @param array $rules
@@ -57,11 +41,13 @@ class MgCacheRouting
 
         if (MgCache::$active) {
 
-            // MgAssetController::assetStylesheetAction()
-            $rules['wp/wp-content/plugins/mg-cache/cache/(\w+)\.css$'] = 'index.php?pagename=mg_asset_css&fingerprint=$matches[1]';
+            if (!class_exists('MgCache')) {
+                include_once(__DIR__ . '/mg-cache.php');
+            }
+            MgCache::load();
 
-            // MgAssetController::assetScriptAction()
-            $rules['wp/wp-content/plugins/mg-cache/cache/(\w+)\.js$'] = 'index.php?pagename=mg_asset_js&fingerprint=$matches[1]';
+            $rules[MgCacheHelper::$cachePath . '/(\w+)\.css$'] = 'index.php?pagename=mg_asset_css&fingerprint=$matches[1]';
+            $rules[MgCacheHelper::$cachePath . '/(\w+)\.js$']  = 'index.php?pagename=mg_asset_js&fingerprint=$matches[1]';
         }
 
         return $rules;
@@ -95,6 +81,7 @@ class MgCacheRouting
     {
         array_push($vars, 'files');
         array_push($vars, 'fingerprint');
+
         return $vars;
     }
 }

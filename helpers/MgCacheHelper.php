@@ -37,18 +37,18 @@ class MgCacheHelper
 
     public static function init()
     {
-        if(defined('MG_CACHE_DIR')){
-            self::$cacheDir = MG_CACHE_DIR;
+        if (defined('MG_CACHE_DIR')) {
+            self::$cacheDir = WP_CONTENT_DIR . '/' . MG_CACHE_DIR;
         } else {
-            self::$cacheDir  = realpath(dirname(__FILE__) . '/../cache');
+            self::$cacheDir = WP_CONTENT_DIR . '/cache';
         }
-        
-        if(defined('MG_CACHE_PATH')){
-            self::$cachePath = MG_CACHE_PATH;
+
+        if (defined('MG_CACHE_PATH')) {
+            self::$cachePath = '/wp-content/' . MG_CACHE_PATH;
         } else {
-            self::$cachePath = plugin_dir_url(realpath(dirname(__FILE__))) . 'cache';
+            self::$cachePath = '/wp-content/cache';
         }
-        
+
         // ABSPATH won't work reliably if WP is installed in a subdirectory
         self::$webRoot = realpath(dirname($_SERVER['SCRIPT_FILENAME'])) . '/';
         if (empty(self::$webRoot)) {
