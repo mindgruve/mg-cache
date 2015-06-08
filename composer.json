@@ -3,7 +3,8 @@
     "description": "Cache plugin for wordpress",
     "type": "wordpress-plugin",
     "require": {
-        "tedivm/jshrink": "~1.0"
+        "tedivm/jshrink": "~1.0",
+        "doctrine/cache": "1.4.1"
     },
     "license": "MIT",
     "authors": [
