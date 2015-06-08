@@ -45,9 +45,9 @@ class MgCacheRouting
                 include_once(__DIR__ . '/mg-cache.php');
             }
             MgCache::load();
-
-            $rules[MgCacheHelper::$cachePath . '/(\w+)\.css$'] = 'index.php?pagename=mg_asset_css&fingerprint=$matches[1]';
-            $rules[MgCacheHelper::$cachePath . '/(\w+)\.js$']  = 'index.php?pagename=mg_asset_js&fingerprint=$matches[1]';
+            
+            $rules['wp/wp-content/cache/(\w+)\.css$'] = 'index.php?pagename=mg_asset_css&fingerprint=$matches[1]';
+            $rules['wp/wp-content/cache/(\w+)\.js$']  = 'index.php?pagename=mg_asset_js&fingerprint=$matches[1]';
         }
 
         return $rules;

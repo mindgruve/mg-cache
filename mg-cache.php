@@ -102,9 +102,15 @@ if (!class_exists('MgCache')) {
          */
         public static function load()
         {
+            self::registerFactories();
             self::registerHelpers();
             self::registerControllers();
             self::registerRoutes();
+        }
+
+        public static function registerFactories()
+        {
+            include_once('factories/CacheProviderFactory.php');
         }
 
         /**

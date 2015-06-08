@@ -24,10 +24,16 @@ class MgCacheHelper
     public static $adminOptionsName = 'mgCacheValues';
     public static $objectCacheTimeout = 3600; // 15 minutes
 
+    /**
+     * @var \Doctrine\Common\Cache\CacheProvider
+     */
+    public static $cacheDriver = null;
+
     // directories
     public static $cacheDir = null;
     public static $cachePath = null;
     public static $webRoot = null;
+    public static $fileExtension = null;
 
     /**
      *
@@ -43,10 +49,21 @@ class MgCacheHelper
             self::$cacheDir = WP_CONTENT_DIR . '/cache';
         }
 
+        $wpContentUrl = preg_replace('/(http|https):\/\/'.$_SERVER['HTTP_HOST'].'\/(.*)\/wp-content/','/wp-content',WP_CONTENT_URL );
         if (defined('MG_CACHE_PATH')) {
-            self::$cachePath = '/wp-content/' . MG_CACHE_PATH;
+            self::$cachePath = $wpContentUrl . '/' . MG_CACHE_PATH;
         } else {
-            self::$cachePath = '/wp-content/cache';
+            self::$cachePath = $wpContentUrl . '/cache';
+        }
+
+        if (defined('MG_CACHE_EXTENSION')) {
+            self::$fileExtension = MG_CACHE_EXTENSION;
+        } else {
+            self::$fileExtension = 'cache';
+        }
+
+        if (defined('MG_CACHE_DRIVER')) {
+            self::$cacheDriver = CacheProviderFactory::build(MG_CACHE_DRIVER);
         }
 
         // ABSPATH won't work reliably if WP is installed in a subdirectory
@@ -54,6 +71,13 @@ class MgCacheHelper
         if (empty(self::$webRoot)) {
             self::$webRoot = ABSPATH;
         }
+
+        if (defined('MG_CACHE_DRIVER')) {
+            self::$cacheDriver = CacheProviderFactory::build(MG_CACHE_DRIVER);
+        } else {
+            self::$cacheDriver = CacheProviderFactory::build('file');
+        }
+
 
         // test that cache directory is writable (for windows and vagrant... which fail is_writable)
         try {
@@ -69,6 +93,7 @@ class MgCacheHelper
         } catch (\Exception $e) {
             add_action('admin_notices', array('MgAssetHelper', 'adminErrorNoticeCacheDirectoryWritable'));
         }
+
         self::getCachedPage();
     }
 
@@ -123,22 +148,25 @@ class MgCacheHelper
 
     public static function add($key, $data, $group = '')
     {
-        if (self::exists($key, $group)) {
+        self::$cacheDriver->setNamespace($group);
+        if (self::$cacheDriver->contains($key)) {
             return false;
         }
 
-        self::set($key, $data, $group);
+        self::$cacheDriver->save($key, $data, self::$objectCacheTimeout);
     }
 
     public static function set($key, $data, $group = '')
     {
-        file_put_contents(self::cacheFile($key, $group), serialize($data));
+        self::$cacheDriver->setNamespace($group);
+        self::$cacheDriver->save($key, $data, self::$objectCacheTimeout);
     }
 
     public static function get($key, $group = '')
     {
-        if (self::exists($key, $group)) {
-            return unserialize(file_get_contents(self::cacheFile($key, $group)));
+        self::$cacheDriver->setNamespace($group);
+        if (self::$cacheDriver->contains($key)) {
+            return self::$cacheDriver->fetch($key);
         }
 
         return false;
@@ -146,45 +174,25 @@ class MgCacheHelper
 
     public static function exists($key, $group = '')
     {
-        $now  = time();
-        $file = self::cacheFile($key, $group);
-        if (!file_exists($file)) {
-            return false;
-        } elseif ((filemtime($file) + self::$objectCacheTimeout) <= $now) {
-            self::delete($key, $group);
+        self::$cacheDriver->setNamespace($group);
 
-            return false;
-        }
-
-        return true;
+        return self::$cacheDriver->contains($key);
     }
 
     public static function delete($key, $group = '')
     {
-        $file = self::cacheFile($key, $group);
-        if (file_exists($file)) {
-            unlink($file);
-        }
+        self::$cacheDriver->setNamespace($group);
+        self::$cacheDriver->delete($key);
     }
 
     public static function flush()
     {
-        $files = glob(self::$cacheDir . '/*');
-        foreach ($files as $file) {
-            if (is_file($file)) {
-                unlink($file);
-            }
-        }
+        self::$cacheDriver->flushAll();
     }
 
     private static function hash($key, $group)
     {
         return md5($key . '-' . $group);
-    }
-
-    private static function cacheFile($key, $group)
-    {
-        return self::$cacheDir . '/' . self::hash($key, $group);
     }
 
     public static function getCachedPage()
@@ -225,7 +233,7 @@ class MgCacheHelper
 
         // retrieve cache
         if (self::exists($key, $group)) {
-            header('mgcache: ' . self::hash($key, $group));
+            header('mgcache: ' . $group . '-' . $key);
             echo self::get($key, $group);
             exit;
         }
