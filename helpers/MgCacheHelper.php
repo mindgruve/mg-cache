@@ -49,7 +49,7 @@ class MgCacheHelper
             self::$cacheDir = WP_CONTENT_DIR . '/cache';
         }
 
-        $wpContentUrl = preg_replace('/(http|https):\/\/'.$_SERVER['HTTP_HOST'].'\/(.*)\/wp-content/','/wp-content',WP_CONTENT_URL );
+        $wpContentUrl = preg_replace('/(http|https):\/\/' . $_SERVER['HTTP_HOST'] . '\/(.*)\/wp-content/', '/wp-content', WP_CONTENT_URL);
         if (defined('MG_CACHE_PATH')) {
             self::$cachePath = $wpContentUrl . '/' . MG_CACHE_PATH;
         } else {
@@ -82,7 +82,7 @@ class MgCacheHelper
         // test that cache directory is writable (for windows and vagrant... which fail is_writable)
         try {
             $testFile = self::$cacheDir . '/__cache.txt';
-            $fp       = fopen($testFile, 'w');
+            $fp = fopen($testFile, 'w');
             fwrite($fp, 'hello cache!');
             if (!file_exists($testFile)) {
                 throw new \Exception;
@@ -108,9 +108,9 @@ class MgCacheHelper
         // default options
         $options = array(
             'cache_stylesheets' => true,
-            'cache_scripts'     => true,
+            'cache_scripts' => true,
             'concatenate_files' => true,
-            'minify_output'     => true,
+            'minify_output' => true,
         );
 
         return $options;
@@ -188,6 +188,23 @@ class MgCacheHelper
     public static function flush()
     {
         self::$cacheDriver->flushAll();
+        self::flushJavascript();
+        self::flushCss();
+        unlink(self::$cacheDir.'/__cache.txt');
+    }
+
+    public static function flushJavascript()
+    {
+        foreach (glob(self::$cacheDir . "/*.js") as $jsFile) {
+            unlink($jsFile);
+        }
+    }
+
+    public static function flushCss()
+    {
+        foreach (glob(self::$cacheDir . "/*.css") as $cssFile) {
+            unlink($cssFile);
+        }
     }
 
     private static function hash($key, $group)
@@ -198,8 +215,8 @@ class MgCacheHelper
     public static function getCachedPage()
     {
         $options = self::getAdminOptions();
-        $key     = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-        $group   = 'pageCache';
+        $key = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+        $group = 'pageCache';
 
 
         /* Page Caching not enabled */
@@ -242,8 +259,8 @@ class MgCacheHelper
     public static function cachePage($data)
     {
         $options = self::getAdminOptions();
-        $key     = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-        $group   = 'pageCache';
+        $key = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+        $group = 'pageCache';
 
         /* Page Caching not enabled */
         if (!isset($options['cache_pages']) || $options['cache_pages'] != true) {

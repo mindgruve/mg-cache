@@ -37,10 +37,12 @@ class MgCacheAdmin
         if (isset($_GET['clear_cache']) && $_GET['clear_cache'] == 'true') {
 
             // delete contents of cache directory
-            MgCacheHelper::flush();
-
-            // output status
-            ?><div class="updated"><p><strong><?php _e("Cache Cleared.", "Mg Cache"); ?></strong></p></div><?php
+            try{
+                $flushResponse = MgCacheHelper::flush();
+                ?> <div class="updated"><p><strong><?php _e("Cache Cleared.", "Mg Cache"); ?></strong></p></div> <?php
+            } catch(\Exception $e){
+                ?> <div class="error"><p><strong><?php _e("Error encountered clearing cache.", "Mg Cache"); ?></strong></p></div> <?php
+            }
         }
 
         // check if form was submitted
@@ -48,10 +50,10 @@ class MgCacheAdmin
 
             // update admin options array with post values
             $adminOptions['cache_stylesheets'] = isset($_POST['cache_stylesheets']) ? true : false;
-            $adminOptions['cache_scripts']     = isset($_POST['cache_scripts']) ? true : false;
+            $adminOptions['cache_scripts'] = isset($_POST['cache_scripts']) ? true : false;
             $adminOptions['concatenate_files'] = isset($_POST['concatenate_files']) ? true : false;
-            $adminOptions['minify_output']     = isset($_POST['minify_output']) ? true : false;
-            $adminOptions['cache_pages']       = isset($_POST['cache_pages']) ? true : false;
+            $adminOptions['minify_output'] = isset($_POST['minify_output']) ? true : false;
+            $adminOptions['cache_pages'] = isset($_POST['cache_pages']) ? true : false;
 
             // update database
             update_option(MgCacheHelper::$adminOptionsName, $adminOptions);
