@@ -315,5 +315,6 @@ class MgCacheHelper
 
     public static function timberCachePage($output){
         self::cachePage($output);
+        return $output;
     }
 }
