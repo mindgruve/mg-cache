@@ -312,4 +312,8 @@ class MgCacheHelper
 
         self::flush();
     }
+
+    public static function timberCachePage($output){
+        self::cachePage($output);
+    }
 }

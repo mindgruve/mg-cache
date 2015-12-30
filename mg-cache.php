@@ -63,6 +63,7 @@ if (!class_exists('MgCache')) {
 
                 // filters
                 add_filter('category_rewrite_rules', array('MgCacheRouting', 'rewriteRulesFilter'));
+                add_filter('timber_compile_result', array('MgCacheHelper','timberCachePage'));
             }
         }
         
