@@ -11,7 +11,7 @@
   Plugin URI: http://mindgruve.com/
   Description: Manage assets and cacheing.
   Author: kchevalier@mindgruve.com
-  Version: 1.0
+  Version: 0.9.2
   Author URI: http://mindgruve.com/
  */
 
