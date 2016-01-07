@@ -93,8 +93,6 @@ class MgCacheHelper
         } catch (\Exception $e) {
             add_action('admin_notices', array('MgAssetHelper', 'adminErrorNoticeCacheDirectoryWritable'));
         }
-
-        self::getCachedPage();
     }
 
     /**
@@ -119,7 +117,7 @@ class MgCacheHelper
     /**
      * Get Admin Options
      *
-     * @param true $install
+     * @param bool $install
      * @return array
      */
     public static function getAdminOptions($install = false)
@@ -212,109 +210,4 @@ class MgCacheHelper
         return md5($key . '-' . $group);
     }
 
-    public static function getCachedPage()
-    {
-        $options = self::getAdminOptions();
-        $key = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-        $group = 'pageCache';
-
-
-        /* Page Caching not enabled */
-        if (!isset($options['cache_pages']) || $options['cache_pages'] != true) {
-            return;
-        }
-
-        /* Only use cache on GET request  */
-        if (strtolower($_SERVER['REQUEST_METHOD']) != 'get') {
-            return;
-        }
-
-        /* Don't show when user logged in  */
-        if (is_user_logged_in()) {
-            self::delete($key, $group);
-
-            return;
-        }
-
-        /* AJAX check  */
-        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH'])
-            && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest'
-        ) {
-            return;
-        }
-
-        /* Skip if query param SKIP_CACHED_PAGE == true **/
-        if (isset($_REQUEST['__NO_CACHE'])) {
-            return;
-        }
-
-        // retrieve cache
-        if (self::exists($key, $group)) {
-            header('mgcache: ' . $group . '-' . $key);
-            echo self::get($key, $group);
-            exit;
-        }
-    }
-
-    public static function cachePage($data)
-    {
-        $options = self::getAdminOptions();
-        $key = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-        $group = 'pageCache';
-
-        /* Page Caching not enabled */
-        if (!isset($options['cache_pages']) || $options['cache_pages'] != true) {
-            return;
-        }
-
-        /* Only use cache on GET request  */
-        if (!strtolower($_SERVER['REQUEST_METHOD']) == 'get') {
-            return;
-        }
-
-        /* Don't show when user logged in  */
-        if (is_user_logged_in()) {
-            return;
-        }
-
-        /* AJAX check  */
-        if (empty($_SERVER['HTTP_X_REQUESTED_WITH'])
-            && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest'
-        ) {
-            return;
-        }
-
-        // set cache
-        self::set($key, $data, $group);
-    }
-
-    public static function onSavePost($post_id, $post, $update)
-    {
-        $options = self::getAdminOptions();
-
-        /* Page Caching not enabled */
-        if (!isset($options['cache_pages']) || $options['cache_pages'] != true) {
-            return;
-        }
-
-        $permalink = get_permalink($post_id);
-        self::delete($permalink, 'pageCache');
-    }
-
-    public static function onMenuUpdate()
-    {
-        $options = self::getAdminOptions();
-
-        /* Page Caching not enabled */
-        if (!isset($options['cache_pages']) || $options['cache_pages'] != true) {
-            return;
-        }
-
-        self::flush();
-    }
-
-    public static function timberCachePage($output){
-        self::cachePage($output);
-        return $output;
-    }
 }

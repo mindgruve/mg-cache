@@ -53,7 +53,6 @@ class MgCacheAdmin
             $adminOptions['cache_scripts'] = isset($_POST['cache_scripts']) ? true : false;
             $adminOptions['concatenate_files'] = isset($_POST['concatenate_files']) ? true : false;
             $adminOptions['minify_output'] = isset($_POST['minify_output']) ? true : false;
-            $adminOptions['cache_pages'] = isset($_POST['cache_pages']) ? true : false;
 
             // update database
             update_option(MgCacheHelper::$adminOptionsName, $adminOptions);

@@ -43,21 +43,6 @@
                     </td>
                 </tr>
 
-                <tr>
-                    <th scope="row">
-                        <label>Actions</label>
-                    </th>
-                    <td>
-
-                        <input type='checkbox' class='checkbox' <?php if ($adminOptions['cache_pages']) echo " checked='checked'"; ?> id="cache_pages" name="cache_pages" />
-                        <label for="cache_pages">Cache Pages & Objects</label>
-                        <p>Cached pages are stored for 1 Hour</p>
-                        
-                    </td>
-                    
-                    
-                </tr>
-
             </tbody>
         </table>
 
