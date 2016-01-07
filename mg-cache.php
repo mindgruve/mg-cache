@@ -68,7 +68,9 @@ if (!class_exists('MgCache')) {
             self::registerHelpers();
             self::registerControllers();
             self::registerRoutes();
+            self::flushRewriteRules();
         }
+
 
         public static function registerFactories()
         {
@@ -125,6 +127,15 @@ if (!class_exists('MgCache')) {
                 basename(__FILE__),
                 array('MgCacheAdmin', 'printAdminPage')
             );
+        }
+
+
+        public function flushRewriteRules(){
+            $routesFlushed = get_option(MgCacheHelper::$adminOptionsName.'_routes_flushed',null);
+            if(!$routesFlushed){
+                flush_rewrite_rules();
+                update_option(MgCacheHelper::$adminOptionsName.'_routes_flushed',true);
+            }
         }
     }
 
