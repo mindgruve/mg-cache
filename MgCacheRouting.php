@@ -46,8 +46,8 @@ class MgCacheRouting
             }
             MgCache::load();
             
-            $rules['wp/wp-content/cache/(\w+)\.css$'] = 'index.php?pagename=mg_asset_css&fingerprint=$matches[1]';
-            $rules['wp/wp-content/cache/(\w+)\.js$']  = 'index.php?pagename=mg_asset_js&fingerprint=$matches[1]';
+            $rules['wp/wp-content/cache/prod/(\w+)\.css$'] = 'index.php?pagename=mg_asset_css&fingerprint=$matches[1]';
+            $rules['wp/wp-content/cache/prod/(\w+)\.js$']  = 'index.php?pagename=mg_asset_js&fingerprint=$matches[1]';
         }
 
         return $rules;

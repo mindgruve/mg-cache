@@ -35,6 +35,8 @@ class MgCacheHelper
     public static $webRoot = null;
     public static $fileExtension = null;
 
+    protected static $cacheSubdir = 'prod';
+
     /**
      *
      * METHODS
@@ -44,16 +46,20 @@ class MgCacheHelper
     public static function init()
     {
         if (defined('MG_CACHE_DIR')) {
-            self::$cacheDir = WP_CONTENT_DIR . '/' . MG_CACHE_DIR;
+            self::$cacheDir = WP_CONTENT_DIR.'/'.MG_CACHE_DIR.'/'.self::$cacheSubdir;
         } else {
-            self::$cacheDir = WP_CONTENT_DIR . '/cache';
+            self::$cacheDir = WP_CONTENT_DIR.'/cache/'.self::$cacheSubdir;
         }
 
-        $wpContentUrl = preg_replace('/(http|https):\/\/' . $_SERVER['HTTP_HOST'] . '\/(.*)\/wp-content/', '/wp-content', WP_CONTENT_URL);
+        $wpContentUrl = preg_replace(
+            '/(http|https):\/\/'.$_SERVER['HTTP_HOST'].'\/(.*)\/wp-content/',
+            '/wp-content',
+            WP_CONTENT_URL
+        );
         if (defined('MG_CACHE_PATH')) {
-            self::$cachePath = $wpContentUrl . '/' . MG_CACHE_PATH;
+            self::$cachePath = $wpContentUrl.'/'.MG_CACHE_PATH.'/'.self::$cacheSubdir;
         } else {
-            self::$cachePath = $wpContentUrl . '/cache';
+            self::$cachePath = $wpContentUrl.'/cache/'.self::$cacheSubdir;
         }
 
         if (defined('MG_CACHE_EXTENSION')) {
@@ -67,7 +73,7 @@ class MgCacheHelper
         }
 
         // ABSPATH won't work reliably if WP is installed in a subdirectory
-        self::$webRoot = realpath(dirname($_SERVER['SCRIPT_FILENAME'])) . '/';
+        self::$webRoot = realpath(dirname($_SERVER['SCRIPT_FILENAME'])).'/';
         if (empty(self::$webRoot)) {
             self::$webRoot = ABSPATH;
         }
@@ -81,7 +87,7 @@ class MgCacheHelper
 
         // test that cache directory is writable (for windows and vagrant... which fail is_writable)
         try {
-            $testFile = self::$cacheDir . '/__cache.txt';
+            $testFile = self::$cacheDir.'/__cache.txt';
             $fp = fopen($testFile, 'w');
             fwrite($fp, 'hello cache!');
             if (!file_exists($testFile)) {
@@ -185,29 +191,23 @@ class MgCacheHelper
 
     public static function flush()
     {
-        self::$cacheDriver->flushAll();
-        self::flushJavascript();
-        self::flushCss();
-        unlink(self::$cacheDir.'/__cache.txt');
+        $cacheDirBk = self::$cacheDir.'_bk'.uniqid();
+        rename(self::$cacheDir, $cacheDirBk);
+        self::removeDirectory($cacheDirBk);
     }
 
-    public static function flushJavascript()
-    {
-        foreach (glob(self::$cacheDir . "/*.js") as $jsFile) {
-            unlink($jsFile);
+    protected static function removeDirectory($path) {
+        $files = glob($path . '/*');
+        foreach ($files as $file) {
+            is_dir($file) ? self::removeDirectory($file) : unlink($file);
         }
-    }
-
-    public static function flushCss()
-    {
-        foreach (glob(self::$cacheDir . "/*.css") as $cssFile) {
-            unlink($cssFile);
-        }
+        rmdir($path);
+        return;
     }
 
     private static function hash($key, $group)
     {
-        return md5($key . '-' . $group);
+        return md5($key.'-'.$group);
     }
 
 }
