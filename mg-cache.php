@@ -47,12 +47,41 @@ if (!class_exists('MgCache')) {
             if (MgCacheRequirements::checkRequirements() && self::$active) {
 
                 // actions
+                add_action('activated_plugin',array('MgCache', 'activate'));
+                add_action('deactivated_plugin',array('MgCache', 'deactivate'));
                 add_action('init', array('MgCache', 'load'));
                 add_action('admin_menu', array('MgCache', 'registerAdmin'));
 
                 // filters
                 add_filter('category_rewrite_rules', array('MgCacheRouting', 'rewriteRulesFilter'));
             }
+        }
+
+        /**
+         * Activate plugin
+         *
+         * @since MgCache 1.0
+         *
+         * @return null
+         */
+        public static function activate($plugin)
+        {
+            // flush URL rewrite rules cache
+            include_once('MgCacheRouting.php');
+            flush_rewrite_rules();
+        }
+
+        /**
+         * Deactivate plugin
+         *
+         * @since MgCache 1.0
+         *
+         * @return null
+         */
+        public static function deactivate($plugin)
+        {
+            // flush URL rewrite rules cache
+            flush_rewrite_rules();
         }
 
         /**
